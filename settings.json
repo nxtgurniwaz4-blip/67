@@ -6,8 +6,8 @@
     "type": "offline"
   },
   "server": {
-    "ip": "Cocomelon-76hE.aternos.me",
-    "port": 60502,
+    "ip": "onepiecesmp87.play.hosting",
+    "port": 7833,
     "version": "1.21.11",
     "try-creative": false
   },
