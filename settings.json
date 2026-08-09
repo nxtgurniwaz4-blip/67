@@ -10,13 +10,52 @@
     "port": 25565,
     "version": "1.21.1",
     "try-creative": true
+    {
+  "name": "AFK Bot",
+  "bot-account": {
+    "username": "Slobot00",
+    "password": "",
+    "type": "offline"
   },
-    "utils": {
+  "server": {
+    "ip": "onepiecesmp87.play.hosting",
+    "port": 25565,
+    "version": "1.21.1",
+    "try-creative": true
+  },
+  "position": {
+    "enabled": true,
+    "x": 0,
+    "y": 70,
+    "z": 0
+  },
+  "utils": {
     "auto-reconnect": true,
-    "auto-reconnect-delay": 10000,
+    "auto-reconnect-delay": 5000,
     "anti-afk": {
-      "enabled": false,
-      "sneak": false
+      "enabled": true,
+      "sneak": true
+    },
+    "chat-messages": {
+      "enabled": true,
+      "repeat": true,
+      "repeat-delay": 90,
+      "messages": [
+        "Checking out the server coordinates.",
+        "Just keeping the chunks loaded!",
+        "Nice base build here."
+      ]
     }
   }
-
+}
+  
+  },
+  "utils": {
+    "auto-reconnect": true,
+    "auto-reconnect-delay": 5000,
+    "anti-afk": {
+      "enabled": true,
+      "sneak": true
+    }
+  }
+}
