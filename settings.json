@@ -1,9 +1,10 @@
-{
-  "name": "AFK Bot",
-  "bot-account": {
-    "username": "Slobot00",
-    "password": "",
-    "type": "offline"
+  "server": {
+    "ip": "Cocomelon-76hE.aternos.me",
+    "port": 34541,
+    "version": "26.42",
+    "try-creative": false
+  }
+
   },
   "server": {
     "ip": "slobtest1.aternos.me",
