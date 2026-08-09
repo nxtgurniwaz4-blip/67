@@ -8,8 +8,8 @@
   "server": {
     "ip": "onepiecesmp87.play.hosting",
     "port": 7833,
-    "version": "1.21.11",
-    "try-creative":
+    "version": "1.21.1",
+    "try-creative": true
   },
   "utils": {
     "auto-reconnect": true,
