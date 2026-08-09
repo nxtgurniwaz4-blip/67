@@ -10,6 +10,17 @@
     "port": 34541,
     "version": "",
     "try-creative": false
+  },
+  "reconnect": {
+    "auto-reconnect": true,
+    "auto-reconnect-delay": 5000,
+    "max-reconnect-attempts": 10
+  },
+  "advanced": {
+    "anti-afk": true,
+    "linear-movement": true,
+    "respond-to-chat": false
   }
 }
+
 
