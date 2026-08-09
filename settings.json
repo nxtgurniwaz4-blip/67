@@ -5,11 +5,13 @@
     "password": "",
     "type": "offline"
   },
-  "server": {
-    "ip": "slobtest1.aternos.me",
-    "port": 27586,
+    "server": {
+    "ip": "Cocomelon-76hE.aternos.me",
+    "port": 34541,
     "version": "",
     "try-creative": false
+  }
+
   },
   "position": {
     "enabled": true,
