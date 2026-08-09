@@ -6,10 +6,12 @@
     "type": "offline"
   },
   "server": {
-    "ip": "onepiecesmp87.play.hosting",
+    "ip": "62.141.62.87",
     "port": 7833,
     "version": "1.21.1",
     "try-creative": true
+  
+
   },
   "utils": {
     "auto-reconnect": true,
