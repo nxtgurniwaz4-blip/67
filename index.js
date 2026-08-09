@@ -218,18 +218,20 @@ app.get('/', (req, res) => {
   `);
 });
 
-Use code with caution.
+
 // ============================================================
 // MINEFLAYER BOT LOGIC
 // ============================================================
 function createBot() {
 if (botState.connected) return;
-bot = mineflayer.createBot({
-host: config.server.ip,
-port: config.server.port || 25565,
-username: config.bot.username,
-auth: config.bot.auth || 'offline'
-});
+  bot = mineflayer.createBot({
+    host: config.server.ip,
+    port: config.server.port || 25565,
+    username: config.bot.username,
+    auth: config.bot.auth || 'offline',
+    viewDistance: 'tiny',
+    physicsEnabled: false
+  });
 bot.loadPlugin(pathfinder);
 bot.on('login', () => {
 botState.connected = true;
