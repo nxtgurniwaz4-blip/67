@@ -9,7 +9,7 @@
     "ip": "onepiecesmp87.play.hosting",
     "port": 7833,
     "version": "1.21.11",
-    "try-creative": false
+    "try-creative":
   },
   "utils": {
     "auto-reconnect": true,
