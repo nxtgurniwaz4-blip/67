@@ -152,7 +152,7 @@ app.get('/', (req, res) => {
             <div class="stat-card">
               <div class="stat-item">
                 <dt>Server address</dt>
-                <dd id="server-ip-text">Not configured</dd>
+                <dd id="server-ip-text">Not configured</dd>)
               </div>
             </div>
           </section>
