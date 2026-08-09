@@ -236,7 +236,7 @@ bot.loadPlugin(pathfinder);
 bot.on('login', () => {
 botState.connected = true;
 botState.reconnectAttempts = 0;
-addLog(Bot logged in as \${bot.username});
+addLog(`Bot logged in as‘ + {bot.username});
 });
 bot.on('move', () => {
 if (bot.entity) {
@@ -249,7 +249,7 @@ z: Math.round(bot.entity.position.z)
 });
 bot.on('end', () => {
 botState.connected = false;
-addLog("Bot disconnected.");
+addLog("Bot   disconnected.");
 if (movementInterval) clearInterval(movementInterval);
 });
 bot.on('error', (err) => {
