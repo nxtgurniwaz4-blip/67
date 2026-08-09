@@ -11,12 +11,12 @@
     "version": "1.21.1",
     "try-creative": true
   },
-  "utils": {
+    "utils": {
     "auto-reconnect": true,
-    "auto-reconnect-delay": 5000,
+    "auto-reconnect-delay": 10000,
     "anti-afk": {
-      "enabled": true,
-      "sneak": true
+      "enabled": false,
+      "sneak": false
     }
   }
-}
+
