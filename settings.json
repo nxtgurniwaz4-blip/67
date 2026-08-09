@@ -6,8 +6,8 @@
     "type": "offline"
   },
   "server": {
-    "ip": "62.141.62.31",
-    "port": 33662,
+    "ip": "onepiecesmp87.play.hosting",
+    "port": 7833,
     "version": "1.21.11",
     "try-creative": false
   },
