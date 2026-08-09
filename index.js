@@ -195,7 +195,7 @@ app.get('/', (req, res) => {
                 document.getElementById('status-label').innerText = 'Online';
                 document.getElementById('status-detail').innerText = 'Connected to server';
                 document.getElementById('uptime-text').innerText = formatUptime(data.uptime);
-                document.getElementById('coords-text').innerText = `X: ${data.coords.x}, Y: ${data.coords.y}, Z: ${data.coords.z}`;
+                document.getElementById('coords-text').innerText = 'X: ' + data.coords.x .+ ', Y: ' + data.coords.y + ', Z: ' + data. coords.z;
               } else {
                 section.className = 'status-section offline';
                 icon.className = 'status-icon offline';
