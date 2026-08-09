@@ -2,13 +2,13 @@
   "name": "AFK Bot",
   "bot-account": {
     "username": "Slobot00",
-    "password": "1.21.1",
+    "password": "",
     "type": "offline"
   },
   "server": {
     "ip": "Cocomelon-76hE.aternos.me",
     "port": 34541,
-    "version": "",
+    "version": "1.21.1",
     "try-creative": false
   },
   "utils": {
