@@ -152,7 +152,7 @@ app.get('/', (req, res) => {
             <div class="stat-card">
               <div class="stat-item">
                 <dt>Server address</dt>
-                <dd>${config.server?.ip || "Not configured"}</dd>
+                <dd>${config.server ? config.server.ip : "Not configured"}</dd>
               </div>
             </div>
           </section>
