@@ -6,8 +6,8 @@
     "type": "offline"
   },
   "server": {
-    "ip": "Cocomelon-76hE.aternos.me",
-    "port": 34541,
+    "ip": "Cocomelon-76hE.exaraton.me",
+    "port": 60502,
     "version": "1.21.11",
     "try-creative": false
   },
