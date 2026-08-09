@@ -11,20 +11,12 @@
     "version": "",
     "try-creative": false
   },
-  "auto-reconnect": true,
-  "auto-reconnect-delay": 5000,
-  "settings": {
+  "utils": {
     "auto-reconnect": true,
-    "auto-reconnect-delay": 5000
-  },
-  "reconnect": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000
-  },
-  "config": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000
+    "auto-reconnect-delay": 5000,
+    "anti-afk": {
+      "enabled": true,
+      "sneak": true
+    }
   }
 }
-
-
