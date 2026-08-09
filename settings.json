@@ -8,5 +8,9 @@
   "version": "",
   "try-creative": false,
   "auto-reconnect": true,
-  "auto-reconnect-delay": 5000
+  "auto-reconnect-delay": 5000,
+  "auto_reconnect": true,
+  "auto_reconnect_delay": 5000,
+  "reconnect-delay": 5000,
+  "reconnect_delay": 5000
 }
