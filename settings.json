@@ -11,6 +11,8 @@
     "version": "",
     "try-creative": false
   },
-  "reconnect": {
-    "auto-reconnect": 
-
+  "settings": {
+    "auto-reconnect": true,
+    "auto-reconnect-delay": 5000
+  }
+}
