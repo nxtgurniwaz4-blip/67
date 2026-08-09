@@ -1,24 +1,17 @@
 {
   "name": "AFK Bot",
-  "ip": "Cocomelon-76hE.aternos.me",
-  "port": 34541,
-  "username": "Slobot00",
-  "password": "",
-  "type": "offline",
-  "version": "",
-  "try-creative": false,
+  "bot-account": {
+    "username": "Slobot00",
+    "password": "",
+    "type": "offline"
+  },
+  "server": {
+    "ip": "Cocomelon-76hE.aternos.me",
+    "port": 34541,
+    "version": "",
+    "try-creative": false
+  },
   "auto-reconnect": true,
-  "auto-reconnect-delay": 5000,
-  "config": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000
-  },
-  "settings": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000
-  },
-  "reconnect": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000
-  }
+  "auto-reconnect-delay": 5000
 }
+
