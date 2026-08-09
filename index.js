@@ -152,8 +152,8 @@ app.get('/', (req, res) => {
             <div class="stat-card">
               <div class="stat-item">
                 <dt>Server address</dt>
-                <dd>${(typeof config !== 'undefined' && config && config.server) ? config.server.ip : "Not configured"}</dd>
-              </div>
+                <dd>${config?.server?.ip || "Not configured"}</dd>
+              </div'
             </div>
           </section>
           <section class="controls">
