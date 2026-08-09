@@ -83,7 +83,7 @@ app.get('/', (req, res) => {
         <title>${config.name || "AFK Bot"} Dashboard</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+        <link rel="stylesheet" href="https://googleapis.com">
         <style>
           *, *::before, *::after { box-sizing: border-box; }
           body {
@@ -138,16 +138,22 @@ app.get('/', (req, res) => {
           </section>
           <section>
             <div class="stat-card">
-              <dt>Uptime</dt>
-              <dd id="uptime-text">—</dd>
+              <div class="stat-item">
+                <dt>Uptime</dt>
+                <dd id="uptime-text">—</dd>
+              </div>
             </div>
             <div class="stat-card">
-              <dt>Coordinates</dt>
-              <dd id="coords-text">Searching…</dd>
+              <div class="stat-item">
+                <dt>Coordinates</dt>
+                <dd id="coords-text">Searching…</dd>
+              </div>
             </div>
             <div class="stat-card">
-              <dt>Server address</dt>
-              <dd>${config.server.ip}</dd>
+              <div class="stat-item">
+                <dt>Server address</dt>
+                <dd>${config.server?.ip || "Not configured"}</dd>
+              </div>
             </div>
           </section>
           <section class="controls">
@@ -180,30 +186,29 @@ app.get('/', (req, res) => {
               const online = data.status === 'connected';
               const section = document.getElementById('status-section');
               const icon = document.getElementById('status-icon');
-              const label = document.getElementById('status-label');
-              const detail = document.getElementById('status-detail');
-              const coords = document.getElementById('coords-text');
-              const uptime = document.getElementById('uptime-text');
               
               if (online) {
-                section.className = "status-section online";
-                icon.className = "status-icon online";
-                icon.innerHTML = "&#x2713;";
-                label.className = "status-label online";
-                label.innerText = "Online";
-                detail.innerText = "Connected to Minecraft Server";
-                coords.innerText = "X: " + data.coords.x + " Y: " + data.coords.y + " Z: " + data.coords.z;
+                section.className = 'status-section online';
+                icon.className = 'status-icon online';
+                icon.innerHTML = '&#x2713;';
+                document.getElementById('status-label').className = 'status-label online';
+                document.getElementById('status-label').innerText = 'Online';
+                document.getElementById('status-detail').innerText = 'Connected to server';
+                document.getElementById('uptime-text').innerText = formatUptime(data.uptime);
+                document.getElementById('coords-text').innerText = `X: \${data.coords.x}, Y: \${data.coords.y}, Z: \${data.coords.z}`;
               } else {
-                section.className = "status-section offline";
-                icon.className = "status-icon offline";
-                icon.innerHTML = "&#x2717;";
-                label.className = "status-label offline";
-                label.innerText = "Offline";
-                detail.innerText = "Disconnected";
-                coords.innerText = "Searching…";
+                section.className = 'status-section offline';
+                icon.className = 'status-icon offline';
+                icon.innerHTML = '&#x2717;';
+                document.getElementById('status-label').className = 'status-label offline';
+                document.getElementById('status-label').innerText = 'Offline';
+                document.getElementById('status-detail').innerText = 'Bot is not running';
+                document.getElementById('uptime-text').innerText = '—';
+                document.getElementById('coords-text').innerText = 'Searching…';
               }
-              uptime.innerText = formatUptime(data.uptime);
-            } catch (e) {}
+            } catch (e) {
+              console.error("Dashboard updating error:", e);
+            }
           }
           setInterval(update, 5000);
           update();
@@ -213,41 +218,26 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Run Web Interface
-app.listen(PORT, () => {
-  addLog(`Keep-alive dashboard active on port ${PORT}`);
-  console.log(`[System] Web Server running on port ${PORT}`);
-});
-
+Use code with caution.
 // ============================================================
-// MINEFLAYER MINECRAFT BOT LOGIC & ANTI-AFK ENGINE
+// MINEFLAYER BOT LOGIC
 // ============================================================
 function createBot() {
-  if (bot) {
-Use code with caution.
-try { bot.quit(); } catch(e){}
-}
-addLog("Attempting connection to Minecraft server...");
+if (botState.connected) return;
 bot = mineflayer.createBot({
 host: config.server.ip,
 port: config.server.port || 25565,
-username: config["bot-account"].username,
-version: config.server.version || "1.21.1",
-auth: config["bot-account"].type || "offline"
+username: config.bot.username,
+auth: config.bot.auth || 'offline'
 });
-// Load the plugin needed to pathfind/move physical legs
 bot.loadPlugin(pathfinder);
-bot.on('spawn', () => {
+bot.on('login', () => {
 botState.connected = true;
-addLog(Bot successfully spawned in as ${bot.username});
-if (config.server["try-creative"]) {
-bot.chat('/gamemode creative');
-}
-// Initialize physical anti-AFK movement loop
-startMovementLoop();
+botState.reconnectAttempts = 0;
+addLog(Bot logged in as \${bot.username});
 });
 bot.on('move', () => {
-if (bot.entity && bot.entity.position) {
+if (bot.entity) {
 botState.coords = {
 x: Math.round(bot.entity.position.x),
 y: Math.round(bot.entity.position.y),
@@ -255,47 +245,19 @@ z: Math.round(bot.entity.position.z)
 };
 }
 });
-bot.on('end', (reason) => {
+bot.on('end', () => {
 botState.connected = false;
-clearInterval(movementInterval);
-addLog(Bot disconnected. Reason: ${reason});
-if (config.utils["auto-reconnect"]) {
-addLog(Reconnecting in ${config.utils["auto-reconnect-delay"]}ms...);
-setTimeout(createBot, config.utils["auto-reconnect-delay"]);
-}
+addLog("Bot disconnected.");
+if (movementInterval) clearInterval(movementInterval);
 });
 bot.on('error', (err) => {
-addLog(Critical bot exception: ${err.message});
-console.error(err);
+addLog(Bot error: \${err.message});
 });
 }
-// Core Physics Routine: Solves the 2-minute server kick rule
-function startMovementLoop() {
-if (movementInterval) clearInterval(movementInterval);
-let step = true;
-movementInterval = setInterval(() => {
-if (!botState.connected || !bot || !bot.pathfinder) return;
-if (config.position && config.position.enabled) {
-const defaultMovements = new Movements(bot);
-bot.pathfinder.setMovements(defaultMovements);
-// Slights offsets keep anti-cheat plugins from flagging static loop movements
-const offsetX = step ? 1 : -1;
-const offsetZ = step ? -1 : 1;
-step = !step;
-const targetX = config.position.x + offsetX;
-const targetZ = config.position.z + offsetZ;
-addLog(Moving bot to: X:${targetX} Z:${targetZ});
-bot.pathfinder.setGoal(new GoalBlock(targetX, config.position.y, targetZ));
-}
-// Toggle sneaking to update server posture updates
-if (config.utils["anti-afk"] && config.utils["anti-afk"].sneak) {
-bot.setControlState('sneak', true);
-setTimeout(() => {
-if (bot) bot.setControlState('sneak', false);
-}, 2000);
-}
-}, 25000); // Shift every 25 seconds to completely clear 2-min server timers
-}
-// Automatically start the bot process on container boot
+// Start express server
+app.listen(PORT, () => {
+addLog(Server running on port \${PORT});
+if (config.autoStart) {
 createBot();
-    
+}
+});
