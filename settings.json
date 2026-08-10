@@ -34,11 +34,7 @@
         "Just keeping the chunks loaded!",
         "Nice base build here."
       ]
-    }
-  }
-}
-  
-  },
+    },
   "utils": {
     "auto-reconnect": true,
     "auto-reconnect-delay": 5000,
