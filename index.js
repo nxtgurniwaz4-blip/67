@@ -253,12 +253,14 @@ addLog("Bot   disconnected.");
 if (movementInterval) clearInterval(movementInterval);
 });
 bot.on('error', (err) => {
-addLog(Bot error: \${err.message});
+    addLog('Bot error: ' + err.message);
+
 });
 }
 // Start express server
 app.listen(PORT, () => {
-addLog(Server running on port \${PORT});
+addLog('Server running on port ' + PORT);
+
 if (config.autoStart) {
 createBot();
 }
