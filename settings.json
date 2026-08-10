@@ -17,30 +17,4 @@
     "x": 0,
     "y": 70,
     "z": 0
-  },
-  "utils": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000,
-    "anti-afk": {
-      "enabled": false,
-      "sneak": true
-    },
-    "chat-messages": {
-      "enabled": true,
-      "repeat": true,
-      "repeat-delay": 90,
-      "messages": [
-        "Checking out the server coordinates.",
-        "Just keeping the chunks loaded!",
-        "Nice base build here."
-      ]
-    },
-  "utils": {
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 5000,
-    "anti-afk": {
-      "enabled": true,
-      "sneak": true
-    }
-  }
-}
+  }}
