@@ -48,7 +48,7 @@ function startBot() {
   // Hardcoded server information to prevent 127.0.0.1 errors
   const serverIp = "onepiecesmp87.play.hosting";
   const serverPort = 25565;
-  const botUsername = "Slobot00";
+  const botUsername = "Zooba";
   const accountPassword = "chalol78";
 
   addLog(`[Network] Pinging ${serverIp}:${serverPort}...`);
