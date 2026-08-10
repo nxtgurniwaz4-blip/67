@@ -2,7 +2,6 @@
 
 const mineflayer = require("mineflayer");
 const express = require("express");
-const config = require("./settings.json");
 
 let logEntries = [];
 function addLog(msg) {
@@ -40,19 +39,24 @@ app.get("/logs", (req, res) => res.send(`<pre>${logEntries.join('\n')}</pre>`));
 app.listen(PORT, () => addLog(`Web Server booted up on port ${PORT}`));
 
 function startBot() {
-  // Clear any existing active movement cycles to prevent memory stacking
   clearInterval(walkInterval);
   if (bot) {
     try { bot.removeAllListeners(); bot.end(); } catch (e) {}
     bot = null;
   }
 
-  addLog(`[Network] Pinging ${config.ip}:${config.port}...`);
+  // Hardcoded server information to prevent 127.0.0.1 errors
+  const serverIp = "onepiecesmp87.play.hosting";
+  const serverPort = 25565;
+  const botUsername = "Slobot00";
+  const accountPassword = "chalol78";
+
+  addLog(`[Network] Pinging ${serverIp}:${serverPort}...`);
 
   bot = mineflayer.createBot({
-    host: config.ip,
-    port: config.port,
-    username: config.username,
+    host: serverIp,
+    port: serverPort,
+    username: botUsername,
     auth: "offline",
     version: false
   });
@@ -64,13 +68,12 @@ function startBot() {
     // Auth handler delay loop
     setTimeout(() => {
       if (botState.connected) {
-        bot.chat(`/login ${config.password}`);
+        bot.chat(`/login ${accountPassword}`);
         addLog("[Auth] Sent account password key packet.");
       }
     }, 2000);
 
     // INFINITE WALK MODULE: Forces the bot forward constantly
-    // Aternos/PlayHosting servers can override static states, so we pulse it every 5 seconds
     clearInterval(walkInterval);
     walkInterval = setInterval(() => {
       if (botState.connected && bot.entity) {
@@ -81,7 +84,7 @@ function startBot() {
 
   bot.on("end", (reason) => {
     botState.connected = false;
-    clearInterval(walkInterval); // Stop ticking movement when disconnected
+    clearInterval(walkInterval);
     addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
     setTimeout(startBot, 15000);
   });
