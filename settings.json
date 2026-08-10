@@ -7,7 +7,7 @@
   },
     "server": {
     "ip": "onepiecesmp87.play.hosting",
-    "port": 26656,
+    "port": 25565,
     "version": "1.21.11",
     "try-creative": true
     },
