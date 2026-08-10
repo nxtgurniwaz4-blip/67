@@ -1,4 +1,4 @@
-"use strict";
+Players admit it get creator"use strict";
 
 const mineflayer = require("mineflayer");
 const express = require("express");
@@ -69,6 +69,7 @@ function startBot() {
     setTimeout(() => {
       if (botState.connected) {
         bot.chat(`/login ${accountPassword}`);
+        bot.chat("/skin Hacker");
         addLog("[Auth] Sent account password key packet.");
       }
     }, 2000);
