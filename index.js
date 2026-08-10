@@ -265,3 +265,4 @@ if (config.autoStart) {
 createBot();
 }
 });
+}
