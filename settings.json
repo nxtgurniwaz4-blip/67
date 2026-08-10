@@ -22,7 +22,7 @@
     "auto-reconnect": true,
     "auto-reconnect-delay": 5000,
     "anti-afk": {
-      "enabled": true,
+      "enabled": false,
       "sneak": true
     },
     "chat-messages": {
