@@ -1,174 +1,136 @@
-const express = require('express');
+"use strict";
+
+const mineflayer = require("mineflayer");
+const { Movements, pathfinder, goals } = require("mineflayer-pathfinder");
+const { GoalBlock } = goals;
+const config = require("./settings.json");
+const express = require("express");
+const readline = require("readline");
+
+// Simple internal logger
+let logEntries = [];
+function addLog(msg) {
+  const time = new Date().toLocaleTimeString();
+  const structuredMsg = `[${time}] ${msg}`;
+  console.log(structuredMsg);
+  logEntries.push(structuredMsg);
+  if (logEntries.length > 200) logEntries.shift();
+}
+function getLogs() { return logEntries; }
+
+// ============================================================
+// EXPRESS SERVER - Dashboard Interface
+// ============================================================
 const app = express();
-const mineflayer = require('mineflayer');
-const fs = require('fs');
+app.use(express.json());
+const PORT = process.env.PORT || 5000;
 
-// Load configurations safely from settings.json
-const config = require('./settings.json');
-const PORT = process.env.PORT || 3000;
+let bot = null;
+let activeIntervals = [];
+let reconnectTimeoutId = null;
+let isReconnecting = false;
+let botRunning = true;
 
-let bot;
-let movementInterval;
 let botState = {
-    connected: false,
-    uptime: 0,
-    coords: { x: 0, y: 0, z: 0 }
+  connected: false,
+  startTime: Date.now(),
 };
 
-// Simple log logger helper
-function addLog(message) {
-    console.log(`[BOT LOG] ${message}`);
-}
-
-// Uptime tracker function
-function formatUptime(seconds) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h}h ${m}m ${s}s`;
-}
-
-// Main function to instantiate the Mineflayer instance
-function createBot() {
-    if (botState.connected) return;
-
-    bot = mineflayer.createBot({
-        host: config.server.ip,
-        port: parseInt(config.server.port) || 25565,
-        username: config.name || "AFK_Bot",
-        version: config.server.version || false
-    });
-
-    bot.on('login', () => {
-        botState.connected = true;
-        addLog('Bot logged in as ' + bot.username);
-    });
-
-    bot.on('move', () => {
-        if (bot.entity) {
-            botState.coords = {
-                x: Math.round(bot.entity.position.x),
-                y: Math.round(bot.entity.position.y),
-                z: Math.round(bot.entity.position.z)
-            };
-        }
-    });
-
-    bot.on('end', () => {
-        botState.connected = false;
-        addLog("Bot disconnected.");
-        if (movementInterval) clearInterval(movementInterval);
-    });
-
-    bot.on('error', (err) => {
-        addLog('Bot error: ' + err.message);
-    });
-}
-
-// Express route endpoint for the web interface panel
 app.get('/', (req, res) => {
-    res.send(`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>\${config.name || "AFK Bot"} Dashboard</title>
-    <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: #fff; margin: 2rem; }
-        .stat-card { background: #2a2a2a; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
-        dt { font-weight: bold; color: #aaa; }
-        dd { margin: 5px 0 0 0; font-size: 1.2rem; }
-        .status-section { padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .online { background: #2e7d32; }
-        .offline { background: #c62828; }
-        .status-icon { font-size: 1.5rem; }
-    </style>
-</head>
-<body>
-    <main>
-        <section id="status-box" class="status-section offline">
-            <span id="status-icon" class="status-icon">&#x2717;</span>
-            <div>
-                <div id="status-label">Offline</div>
-                <small id="status-detail">Panel disconnected from server</small>
-            </div>
-        </section>
-
-        <section>
-            <div class="stat-card">
-                <dt>Uptime</dt>
-                <dd id="uptime-text">-</dd>
-            </div>
-            <div class="stat-card">
-                <dt>Coordinates</dt>
-                <dd id="coords-text">Searching...</dd>
-            </div>
-            <div class="stat-card">
-                <dt>Server address</dt>
-                <dd id="server-ip-text">Not configured</dd>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        function updateDashboard() {
-            // Safe fallback evaluation loop via window fetch API matching backend state
-            fetch('/api/status')
-                .then(res => res.json())
-                .then(data => {
-                    const box = document.getElementById('status-box');
-                    const icon = document.getElementById('status-icon');
-                    const label = document.getElementById('status-label');
-                    const detail = document.getElementById('status-detail');
-
-                    if (data.connected) {
-                        box.className = 'status-section online';
-                        icon.innerHTML = '&#x2713;';
-                        label.innerText = 'Online';
-                        detail.innerText = 'Bot running cleanly';
-                    } else {
-                        box.className = 'status-section offline';
-                        icon.innerHTML = '&#x2717;';
-                        label.innerText = 'Offline';
-                        detail.innerText = 'Waiting for connection trigger';
-                    }
-
-                    document.getElementById('uptime-text').innerText = data.uptimeFormatted;
-                    document.getElementById('coords-text').innerText = 'X: ' + data.coords.x + ', Y: ' + data.coords.y + ', Z: ' + data.coords.z;
-                    document.getElementById('server-ip-text').innerText = data.serverIp;
-                })
-                .catch(e => console.error("Update cycle failed", e));
-        }
-        setInterval(updateDashboard, 5000);
-        updateDashboard();
-    </script>
-</body>
-</html>
-    `);
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <title>${config.name} Dashboard</title>
+        <style>
+          body { font-family: sans-serif; background: #0d1117; color: #e6edf3; padding: 20px; }
+          .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 20px; margin-bottom: 10px; }
+          .btn { padding: 10px 15px; border-radius: 5px; cursor: pointer; border: none; }
+          .btn-start { background: #238636; color: white; }
+          .btn-stop  { background: #da3633; color: white; }
+        </style>
+      </head>
+      <body>
+        <h1>Bot Dashboard</h1>
+        <div class="card">
+          <p>Status: <span id="status-label">Loading...</span></p>
+          <p>Uptime: <span id="uptime-text">--</span></p>
+          <button class="btn btn-start" onclick="fetch('/start', {method:'POST'})">Start</button>
+          <button class="btn btn-stop" onclick="fetch('/stop', {method:'POST'})">Stop</button>
+          <a href="/logs" style="color:white;">View Logs</a>
+        </div>
+        <script>
+          async function update() {
+            const r = await fetch('/health');
+            const data = await r.json();
+            document.getElementById('status-label').textContent = data.status;
+            document.getElementById('uptime-text').textContent = data.uptime + 's';
+          }
+          setInterval(update, 5000); update();
+        </script>
+      </body>
+    </html>
+  `);
 });
 
-// JSON API Endpoint called dynamically by front-end javascript scripts
-app.get('/api/status', (req, res) => {
-    res.json({
-        connected: botState.connected,
-        uptimeFormatted: formatUptime(botState.uptime),
-        coords: botState.coords,
-        serverIp: config.server?.ip || "Not configured"
-    });
+app.get("/health", (req, res) => {
+  res.json({
+    status: botState.connected ? "connected" : "disconnected",
+    uptime: Math.floor((Date.now() - botState.startTime) / 1000),
+  });
 });
 
-// Automated status ticker updater increment loop
-setInterval(() => {
-    if (botState.connected) {
-        botState.uptime++;
+app.get("/logs", (req, res) => res.send(`<pre>${getLogs().join('\n')}</pre>`));
+
+app.post("/start", (req, res) => { createBot(); res.json({ success: true }); });
+app.post("/stop", (req, res) => { if (bot) bot.end(); res.json({ success: true }); });
+
+app.listen(PORT, () => addLog(`Server started on port ${PORT}`));
+
+// ============================================================
+// BOT ENGINE & LOGIC
+// ============================================================
+function clearAllIntervals() {
+  activeIntervals.forEach((id) => clearInterval(id));
+  activeIntervals = [];
+}
+
+function createBot() {
+  if (isReconnecting || !botRunning) return;
+  if (bot) { try { bot.end(); } catch (e) {} }
+
+  addLog(`[Bot] Connecting to ${config.server.ip}`);
+
+  bot = mineflayer.createBot({
+    username: config["bot-account"].username,
+    host: config.server.ip,
+    port: config.server.port,
+  });
+
+  bot.loadPlugin(pathfinder);
+
+  bot.once("spawn", () => {
+    botState.connected = true;
+    addLog(`[Bot] Spawned!`);
+    
+    // Auto Auth
+    if (config.utils["auto-auth"]?.enabled) {
+      bot.on("messagestr", (msg) => {
+        if (msg.includes("login")) bot.chat(`/login ${config.utils["auto-auth"].password}`);
+      });
     }
-}, 1000);
 
-// Initialize application listening engine
-app.listen(PORT, () => {
-    addLog('Server running on port ' + PORT);
-    if (config.autoStart) {
-        createBot();
-    }
-});
+    // Anti AFK
+    addInterval(() => bot.swingArm(), 15000);
+  });
+
+  bot.on("end", () => {
+    botState.connected = false;
+    clearAllIntervals();
+    setTimeout(createBot, 5000);
+  });
+}
+
+createBot();
+
+    
