@@ -105,7 +105,7 @@ function startBot() {
   bot.on("error", (err) => {
     addLog(`[Network Alert] Connection dropped: ${err.message}`);
   });
-}
+})
 
 // Fire up deployment
 startBot();
