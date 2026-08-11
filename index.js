@@ -1,4 +1,4 @@
-Players admit it get creator"use strict";
+"use strict";
 
 const mineflayer = require("mineflayer");
 const express = require("express");
