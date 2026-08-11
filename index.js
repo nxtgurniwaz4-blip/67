@@ -108,4 +108,4 @@ function startBot() {
 })
 
 // Fire up deployment
-startBot();
+startBot();}
