@@ -1,4 +1,4 @@
-"use strict";
+No"use strict";
 
 const mineflayer = require("mineflayer");
 const express = require("express");
@@ -71,6 +71,19 @@ function startBot() {
         bot.chat(`/login ${accountPassword}`);
         bot.chat("/skin Hacker");
         addLog("[Auth] Sent account password key packet.");
+        bot.on('spawn', () => {
+    console.log(`${bot.username} has spawned in the bedrock box.`);
+
+    // Loop runs every 4 minutes (240,000 milliseconds)
+    setInterval(() => {
+        if (bot) {
+            // Sends a server command to check the time
+            bot.chat('/time query day'); 
+            console.log('Sent keep-alive command to prevent Limbo sleep.');
+        }
+    }, 240000); 
+});
+
       }
     }, 2000);
 
