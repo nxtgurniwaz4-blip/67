@@ -1,4 +1,4 @@
-No"use strict";
+"use strict";
 
 const mineflayer = require("mineflayer");
 const express = require("express");
