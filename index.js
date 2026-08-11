@@ -84,7 +84,7 @@ function startBot() {
             console.log('Sent keep-alive command to prevent Limbo sleep.');
         }
     }), 240000);
-  });
+
     
     // INFINITE WALK MODULE: Forces the bot forward constantly
     clearInterval(walkInterval);
@@ -93,7 +93,7 @@ function startBot() {
         bot.setControlState("forward", true);
       }
     }, 5000);
-  });
+
 
   bot.on("end", (reason) => {
     botState.connected = false;
