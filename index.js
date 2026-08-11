@@ -83,7 +83,7 @@ function startBot() {
             bot.chat('/time query day');
             console.log('Sent keep-alive command to prevent Limbo sleep.');
         }
-    }), 240000);
+    }, 240000);
 
     
     // INFINITE WALK MODULE: Forces the bot forward constantly
