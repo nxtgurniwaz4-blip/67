@@ -65,15 +65,16 @@ function startBot() {
     botState.connected = true;
     addLog("[Success] Logged into server instance and spawned cleanly!");
     
-      // Auth handler delay loop
+    // Auth handler delay loop
     setTimeout(() => {
-        if (botState.connected) {. 
+        if (botState && botState.connected) {
             bot.chat(`/login ${accountPassword}`);
             bot.chat("/skin Hacker");
             addLog("[Auth] Sent account password key packet.");
             console.log(`${bot.username} has spawned in the bedrock box.`);
         }
     }, 2000);
+
 
     // Loop runs every 4 minutes (240,000 milliseconds)
     setInterval(() => {
@@ -83,7 +84,7 @@ function startBot() {
             console.log('Sent keep-alive command to prevent Limbo sleep.');
         }
     }, 240000);
-  } come here
+  }
     
     // INFINITE WALK MODULE: Forces the bot forward constantly
     clearInterval(walkInterval);
