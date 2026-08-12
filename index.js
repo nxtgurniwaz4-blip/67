@@ -120,21 +120,35 @@ function startBot() {
     bot = null;
   }
 
-  const serverIp = "onepiecesmp87.play.hosting";
-  const serverPort = 25565;
+  const serverIp = "Cocomelon-76hE.aternos.me";
   const botUsername = "Zooba";
   const accountPassword = "chalol78";
 
-  addLog(`[Network] Pinging ${serverIp}:${serverPort}...`);
+  addLog(`[Network] Pinging ${serverIp}...`);
   
-  bot = mineflayer.createBot({
-    agent: new proxy.SocksProxyAgent(proxyUrl),
-    host: serverIp,
-    port: serverPort,
-    username: botUsername,
-    auth: "offline",
-    version: false
+    // This automatically finds the changing port numbers in the background!
+  require('minecraft-protocol').dns.resolveSRV(serverIp, (err, record) => {
+    let finalHost = serverIp;
+    let finalPort = 25565;
+
+    if (!err && record) {
+      finalHost = record.name;
+      finalPort = record.port;
+      addLog(`[DNS] Found Dynamic Address: ${finalHost}:${finalPort}`);
+    }
+
+    bot = mineflayer.createBot({
+      agent: new proxy.SocksProxyAgent(proxyUrl),
+      host: finalHost,
+      port: finalPort,
+      username: botUsername,
+      auth: "offline",
+      version: false
+    });
+    
+    setupBotEvents(); // This triggers your events cleanly
   });
+
 
   bot.once("spawn", () => {
     botState.connected = true;
