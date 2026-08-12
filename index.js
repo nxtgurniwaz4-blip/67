@@ -3,6 +3,7 @@
 const mineflayer = require("mineflayer");
 const express = require("express");
 const proxy = require("socks-proxy-agent");
+const dns = require("dns");
 const proxyUrl = "socks5://83.14.246.42:1080";
 let logEntries = [];
 
@@ -126,13 +127,13 @@ function startBot() {
 
   addLog(`[Network] Pinging ${serverIp}...`);
   
-  require('minecraft-protocol').dns.resolveSRV(serverIp, (err, record) => {
+    dns.resolveSrv(`_minecraft._tcp.${serverIp}`, (err, records) => {
     let finalHost = serverIp;
     let finalPort = 25565;
 
-    if (!err && record) {
-      finalHost = record.name;
-      finalPort = record.port;
+    if (!err && records && records.length > 0) {
+      finalHost = records[0].name;
+      finalPort = records[0].port;
       addLog(`[DNS] Found Dynamic Address: ${finalHost}:${finalPort}`);
     }
 
