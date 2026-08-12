@@ -5,6 +5,7 @@ const express = require("express");
 const proxy = require("socks-proxy-agent");
 const proxyUrl = "socks5://83.14.246.42:1080";
 let logEntries = [];
+
 function addLog(msg) {
   const time = new Date().toLocaleTimeString();
   const structuredMsg = `[${time}] ${msg}`;
@@ -108,7 +109,6 @@ app.get('/', (req, res) => {
   `);
 });
 
-
 app.get("/health", (req, res) => res.json({ connected: botState.connected }));
 app.get("/logs", (req, res) => res.send(`<pre>${logEntries.join('\n')}</pre>`));
 app.listen(PORT, () => addLog(`Web Server booted up on port ${PORT}`));
@@ -120,15 +120,15 @@ function startBot() {
     bot = null;
   }
 
-  // Hardcoded server information to prevent 127.0.0.1 errors
   const serverIp = "onepiecesmp87.play.hosting";
   const serverPort = 25565;
   const botUsername = "Zooba";
   const accountPassword = "chalol78";
 
   addLog(`[Network] Pinging ${serverIp}:${serverPort}...`);
+  
   bot = mineflayer.createBot({
-        agent: new proxy(proxyUrl),
+    agent: new proxy(proxyUrl),
     host: serverIp,
     port: serverPort,
     username: botUsername,
@@ -140,7 +140,6 @@ function startBot() {
     botState.connected = true;
     addLog("[Success] Logged into server instance and spawned cleanly!");
     
-    // Auth handler delay loop
     setTimeout(() => {
         if (botState && botState.connected) {
             bot.chat(`/login ${accountPassword}`);
@@ -150,25 +149,20 @@ function startBot() {
         }
     }, 2000);
 
-
-    // Loop runs every 4 minutes (240,000 milliseconds)
     setInterval(() => {
         if (bot && botState.connected) {
-            // Sends a server command to check the time
             bot.chat('/time query day');
             console.log('Sent keep-alive command to prevent Limbo sleep.');
         }
     }, 240000);
-
     
-    // INFINITE WALK MODULE: Forces the bot forward constantly
     clearInterval(walkInterval);
     walkInterval = setInterval(() => {
       if (botState.connected && bot.entity) {
         bot.setControlState("forward", true);
       }
     }, 5000);
-
+  });
 
   bot.on("end", (reason) => {
     botState.connected = false;
@@ -178,9 +172,9 @@ function startBot() {
   });
 
   bot.on("error", (err) => {
+    botState.connected = false;
     addLog(`[Network Alert] Connection dropped: ${err.message}`);
   });
-})
+}
 
-// Fire up deployment
-startBot();}
+startBot();
