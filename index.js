@@ -2,7 +2,8 @@
 
 const mineflayer = require("mineflayer");
 const express = require("express");
-
+const proxy = require("socks-proxy-agent");
+const proxyUrl = "socks5://83.14.246.42:1080";
 let logEntries = [];
 function addLog(msg) {
   const time = new Date().toLocaleTimeString();
@@ -52,8 +53,8 @@ function startBot() {
   const accountPassword = "chalol78";
 
   addLog(`[Network] Pinging ${serverIp}:${serverPort}...`);
-
   bot = mineflayer.createBot({
+        agent: new proxy(proxyUrl),
     host: serverIp,
     port: serverPort,
     username: botUsername,
