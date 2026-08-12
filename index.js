@@ -128,7 +128,7 @@ function startBot() {
   addLog(`[Network] Pinging ${serverIp}:${serverPort}...`);
   
   bot = mineflayer.createBot({
-    agent: new proxy .SocksProxyAgent(proxyUrl),
+    agent: new proxy.SocksProxyAgent(proxyUrl),
     host: serverIp,
     port: serverPort,
     username: botUsername,
