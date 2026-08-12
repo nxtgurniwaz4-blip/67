@@ -6,7 +6,7 @@
     "type": "offline"
   },
   "server": {
-    "ip": "alpaca.aternos.host:34541",
+    "ip": "alpaca.aternos.host",
     "port": 34541,
     "version": "1.21.1",
     "try-creative": false
