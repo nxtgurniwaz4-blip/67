@@ -126,7 +126,6 @@ function startBot() {
 
   addLog(`[Network] Pinging ${serverIp}...`);
   
-    // This automatically finds the changing port numbers in the background!
   require('minecraft-protocol').dns.resolveSRV(serverIp, (err, record) => {
     let finalHost = serverIp;
     let finalPort = 25565;
@@ -146,49 +145,50 @@ function startBot() {
       version: false
     });
     
-    setupBotEvents(); // This triggers your events cleanly
+    setupBotEvents(); 
   });
+  
+  function setupBotEvents() {
+    bot.once("spawn", () => {
+      botState.connected = true;
+      addLog("[Success] Logged into server instance and spawned cleanly!");
+      
+      setTimeout(() => {
+          if (botState && botState.connected) {
+              bot.chat(`/login ${accountPassword}`);
+              bot.chat("/skin Hacker");
+              addLog("[Auth] Sent account password key packet.");
+              console.log(`${bot.username} has spawned in the bedrock box.`);
+          }
+      }, 2000);
 
-
-  bot.once("spawn", () => {
-    botState.connected = true;
-    addLog("[Success] Logged into server instance and spawned cleanly!");
-    
-    setTimeout(() => {
-        if (botState && botState.connected) {
-            bot.chat(`/login ${accountPassword}`);
-            bot.chat("/skin Hacker");
-            addLog("[Auth] Sent account password key packet.");
-            console.log(`${bot.username} has spawned in the bedrock box.`);
+      setInterval(() => {
+          if (bot && botState.connected) {
+              bot.chat('/time query day');
+              console.log('Sent keep-alive command to prevent Limbo sleep.');
+          }
+      }, 240000);
+      
+      clearInterval(walkInterval);
+      walkInterval = setInterval(() => {
+        if (botState.connected && bot.entity) {
+          bot.setControlState("forward", true);
         }
-    }, 2000);
+      }, 5000);
+    });
 
-    setInterval(() => {
-        if (bot && botState.connected) {
-            bot.chat('/time query day');
-            console.log('Sent keep-alive command to prevent Limbo sleep.');
-        }
-    }, 240000);
-    
-    clearInterval(walkInterval);
-    walkInterval = setInterval(() => {
-      if (botState.connected && bot.entity) {
-        bot.setControlState("forward", true);
-      }
-    }, 5000);
-  });
+    bot.on("end", (reason) => {
+      botState.connected = false;
+      clearInterval(walkInterval);
+      addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
+      setTimeout(startBot, 15000);
+    });
 
-  bot.on("end", (reason) => {
-    botState.connected = false;
-    clearInterval(walkInterval);
-    addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
-    setTimeout(startBot, 15000);
-  });
-
-  bot.on("error", (err) => {
-    botState.connected = false;
-    addLog(`[Network Alert] Connection dropped: ${err.message}`);
-  });
+    bot.on("error", (err) => {
+      botState.connected = false;
+      addLog(`[Network Alert] Connection dropped: ${err.message}`);
+    });
+  }
 }
 
 startBot();
