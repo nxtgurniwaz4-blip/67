@@ -174,7 +174,7 @@ function startBot() {
         resetInactivityTimer();
     });
 
-    // 2. Bot Dies (Handles standard deaths and specific causes like drowning)
+    // 2. Bot Dies
     bot.on("death", () => {
         const chiefCause = bot.controlState && bot.controlState.jump ? "drowned" : "died"; 
         sendDiscordAlert(chiefCause);
@@ -191,12 +191,26 @@ function startBot() {
         clearTimeout(inactivityTimer);
         inactivityTimer = setTimeout(() => {
             sendDiscordAlert("stayed still");
-        }, 120000); // 2 minutes
+        }, 120000); 
     };
 
-    // Reset the timer whenever the bot successfully changes its position
     bot.on("move", () => {
         resetInactivityTimer();
+    });
+
+    // 5. Connection Disconnects and Drops (Moved inside safely!)
+    bot.on("end", (reason) => {
+        botState.connected = false;
+        clearInterval(walkInterval);
+        sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
+        addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
+        setTimeout(startBot, 15000);
+    });
+
+    bot.on("error", (err) => {
+        botState.connected = false;
+        sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
+        addLog(`[Network Alert] Connection dropped: ${err.message}`);
     });
 }
 
@@ -226,22 +240,6 @@ walkInterval = setInterval(() => {
     }
 }, 5000);
 
-bot.on("end", (reason) => {
-    botState.connected = false;
-    clearInterval(walkInterval);
-    sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
-    addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
-    setTimeout(startBot, 15000);
-});
-
-bot.on("error", (err) => {
-    botState.connected = false;
-    sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
-    addLog(`[Network Alert] Connection dropped: ${err.message}`);
-});
-
 } // Closes the main startBot() function cleanly
 
 startBot();
-
- 
