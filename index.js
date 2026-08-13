@@ -128,7 +128,7 @@ function startBot() {
 
   addLog(`[Network] Pinging ${serverIp}...`);
   
-    dns.resolveSrv(`_minecraft._tcp.${serverIp}`, (err, records) => {
+  dns.resolveSrv(`_minecraft._tcp.${serverIp}`, (err, records) => {
     let finalHost = serverIp;
     let finalPort = 25565;
 
@@ -147,10 +147,11 @@ function startBot() {
       version: false
     });
     
-    setupBotEvents(); 
+    setupBotEvents(accountPassword); 
   });
-  function setupBotEvents() {
-    // Helper function to send the custom alerts to Discord
+}
+
+function setupBotEvents(accountPassword) {
     const sendDiscordAlert = (reason) => {
         const https = require("https");
         const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
@@ -168,24 +169,6 @@ function startBot() {
         req.end();
     };
 
-    // 1. Bot Spawns
-    bot.once("spawn", () => {
-        sendDiscordAlert("joined the server");
-        resetInactivityTimer();
-    });
-
-    // 2. Bot Dies
-    bot.on("death", () => {
-        const chiefCause = bot.controlState && bot.controlState.jump ? "drowned" : "died"; 
-        sendDiscordAlert(chiefCause);
-    });
-
-    // 3. Bot Gets Kicked
-    bot.on("kick", (reason) => {
-        sendDiscordAlert(`kicked (Reason: ${reason})`);
-    });
-
-    // 4. Inactivity Tracker (Detects staying still for 2+ minutes)
     let inactivityTimer;
     const resetInactivityTimer = () => {
         clearTimeout(inactivityTimer);
@@ -194,14 +177,53 @@ function startBot() {
         }, 120000); 
     };
 
+    bot.once("spawn", () => {
+        botState.connected = true;
+        addLog("[Success] Logged into server instance and spawned cleanly!");
+        sendDiscordAlert("joined the server");
+        resetInactivityTimer();
+
+        setTimeout(() => {
+            if (botState && botState.connected && bot) {
+                bot.chat(`/login ${accountPassword}`);
+                bot.chat("/skin Hacker");
+                addLog("[Auth] Sent account password key packet.");
+                console.log(`${bot.username} has spawned in the bedrock box.`);
+            }
+        }, 2000);
+
+        setInterval(() => {
+            if (bot && botState.connected) {
+                bot.chat('/time query day');
+                console.log('Sent keep-alive command to prevent Limbo sleep.');
+            }
+        }, 240000);
+
+        clearInterval(walkInterval);
+        walkInterval = setInterval(() => {
+            if (botState.connected && bot && bot.entity) {
+                bot.setControlState("forward", true);
+            }
+        }, 5000);
+    });
+
+    bot.on("death", () => {
+        const chiefCause = bot.controlState && bot.controlState.jump ? "drowned" : "died"; 
+        sendDiscordAlert(chiefCause);
+    });
+
+    bot.on("kick", (reason) => {
+        sendDiscordAlert(`kicked (Reason: ${reason})`);
+    });
+
     bot.on("move", () => {
         resetInactivityTimer();
     });
 
-    // 5. Connection Disconnects and Drops (Moved inside safely!)
     bot.on("end", (reason) => {
         botState.connected = false;
         clearInterval(walkInterval);
+        clearTimeout(inactivityTimer);
         sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
         addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
         setTimeout(startBot, 15000);
@@ -209,37 +231,11 @@ function startBot() {
 
     bot.on("error", (err) => {
         botState.connected = false;
+        clearInterval(walkInterval);
+        clearTimeout(inactivityTimer);
         sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
         addLog(`[Network Alert] Connection dropped: ${err.message}`);
     });
 }
-
-botState.connected = true;
-addLog("[Success] Logged into server instance and spawned cleanly!");
-
-setTimeout(() => {
-    if (botState && botState.connected) {
-        bot.chat(`/login ${accountPassword}`);
-        bot.chat("/skin Hacker");
-        addLog("[Auth] Sent account password key packet.");
-        console.log(`${bot.username} has spawned in the bedrock box.`);
-    }
-}, 2000);
-
-setInterval(() => {
-    if (bot && botState.connected) {
-        bot.chat('/time query day');
-        console.log('Sent keep-alive command to prevent Limbo sleep.');
-    }
-}, 240000);
-
-clearInterval(walkInterval);
-walkInterval = setInterval(() => {
-    if (botState.connected && bot.entity) {
-        bot.setControlState("forward", true);
-    }
-}, 5000);
-
-} // Closes the main startBot() function cleanly
 
 startBot();
