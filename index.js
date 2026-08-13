@@ -5,8 +5,13 @@ const express = require("express");
 const settings = require("./settings.json");
 const proxy = require("socks-proxy-agent");
 const dns = require("dns");
+const { Client, GatewayIntentBits } = require("discord.js");
+
 const proxyUrl = "socks5://83.14.246.42:1080";
 let logEntries = [];
+
+// ⚠️ PASTE YOUR SECRETS DISCORD BOT TOKEN HERE INSIDE THE QUOTES
+const DISCORD_BOT_TOKEN = "PASTE_YOUR_NEW_SECRET_BOT_TOKEN_HERE"; 
 
 function addLog(msg) {
   const time = new Date().toLocaleTimeString();
@@ -22,6 +27,14 @@ let bot = null;
 let walkInterval = null;
 let botState = { connected: false };
 
+const discordClient = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
+
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -31,79 +44,17 @@ app.get('/', (req, res) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Bot Live Portal</title>
       <style>
-        body {
-          background-color: #0b0c10;
-          background-image: radial-gradient(circle at center, #1f2833 0%, #0b0c10 100%);
-          color: #c5c6c7;
-          font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          margin: 0;
-        }
-        .container {
-          background: rgba(31, 40, 51, 0.65);
-          padding: 35px;
-          border-radius: 16px;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.04);
-          text-align: center;
-          max-width: 420px;
-          width: 85%;
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-        }
-        h1 {
-          font-size: 26px;
-          font-weight: 700;
-          letter-spacing: 1.5px;
-          margin: 0 0 25px 0;
-          color: #ffffff;
-        }
-        .status-box {
-          font-size: 15px;
-          font-weight: 700;
-          padding: 16px;
-          border-radius: 8px;
-          margin-bottom: 30px;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          background: rgba(0, 0, 0, 0.3);
-          color: \${botState.connected ? '#45f3ff' : '#ff4a4a'};
-          text-shadow: 0 0 12px \${botState.connected ? 'rgba(69,243,255,0.4)' : 'rgba(255,74,74,0.4)'};
-          border: 1px solid \${botState.connected ? 'rgba(69,243,255,0.3)' : 'rgba(255,74,74,0.3)'};
-          transition: all 0.5s ease;
-        }
-        .btn {
-          display: block;
-          color: #45f3ff;
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          border: 1px solid rgba(69, 243, 255, 0.4);
-          padding: 12px 24px;
-          border-radius: 6px;
-          background: rgba(69, 243, 255, 0.02);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn:hover {
-          background-color: #45f3ff;
-          color: #0b0c10;
-          box-shadow: 0 0 20px rgba(69, 243, 255, 0.6);
-          border-color: #45f3ff;
-          cursor: pointer;
-        }
+        body { background-color: #0b0c10; color: #c5c6c7; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { background: rgba(31, 40, 51, 0.65); padding: 35px; border-radius: 16px; text-align: center; }
+        h1 { font-size: 26px; color: #ffffff; }
+        .status-box { padding: 16px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); color: #45f3ff; }
+        .btn { display: block; color: #45f3ff; text-decoration: none; padding: 12px 24px; border: 1px solid #45f3ff; margin-top: 20px; }
       </style>
     </head>
     <body>
       <div class="container">
         <h1>AFK Bot Dashboard</h1>
-        <div class="status-box">
-          STATUS: \${botState.connected ? 'ONLINE & RUNNING' : 'OFFLINE / RECONNECTING'}
-        </div>
+        <div class="status-box">STATUS: LIVE</div>
         <a class="btn" href="/logs">View Console Logs</a>
       </div>
     </body>
@@ -135,7 +86,6 @@ function startBot() {
     if (!err && records && records.length > 0) {
       finalHost = records[0].name;
       finalPort = records[0].port;
-      addLog(`[DNS] Found Dynamic Address: ${finalHost}:${finalPort}`);
     }
 
     bot = mineflayer.createBot({
@@ -144,14 +94,14 @@ function startBot() {
       port: finalPort,
       username: botUsername,
       auth: "offline",
-      version: "1.21.1"
+      version: "1.21.1" // Kept exactly to match your current dashboard configurations!
     });
     
     setupBotEvents(accountPassword); 
   });
 }
+
 function setupBotEvents(accountPassword) {
-    // Helper function to send the custom alerts to Discord
     const sendDiscordAlert = (reason) => {
         const https = require("https");
         const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
@@ -172,15 +122,12 @@ function setupBotEvents(accountPassword) {
     let inactivityTimer;
     const resetInactivityTimer = () => {
         clearTimeout(inactivityTimer);
-        inactivityTimer = setTimeout(() => {
-            sendDiscordAlert("stayed still");
-        }, 120000); 
+        inactivityTimer = setTimeout(() => { sendDiscordAlert("stayed still"); }, 120000); 
     };
 
-    // 1. Bot Spawns
     bot.once("spawn", () => {
         botState.connected = true;
-        addLog("[Success] Logged into server instance and spawned cleanly!");
+        addLog("[Success] Logged into server instance cleanly!");
         sendDiscordAlert("joined the server");
         resetInactivityTimer();
 
@@ -188,52 +135,45 @@ function setupBotEvents(accountPassword) {
             if (botState && botState.connected && bot) {
                 bot.chat(`/login ${accountPassword}`);
                 bot.chat("/skin Hacker");
-                addLog("[Auth] Sent account password key packet.");
             }
         }, 2000);
 
         setInterval(() => {
-            if (bot && botState.connected) {
-                bot.chat('/time query day');
-            }
+            if (bot && botState.connected) { bot.chat('/time query day'); }
         }, 240000);
 
         clearInterval(walkInterval);
         walkInterval = setInterval(() => {
-            if (botState.connected && bot && bot.entity) {
-                bot.setControlState("forward", true);
-            }
+            if (botState.connected && bot && bot.entity) { bot.setControlState("forward", true); }
         }, 5000);
     });
 
-    // 2. Chat Scanners for Deaths (Accurately catches death log text)
     bot.on("messagestr", (message) => {
-        if (message.includes("Zooba")) {
-            if (message.includes("drowned")) {
-                sendDiscordAlert("drowned");
-            } else if (message.includes("died") || message.includes("slain") || message.includes("blown up") || message.includes("burnt") || message.includes("killed")) {
-                sendDiscordAlert("died");
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes("zooba")) {
+            if (lowerMessage.includes("drowned")) { sendDiscordAlert("drowned"); }
+            else if (
+                lowerMessage.includes("died") || lowerMessage.includes("slain") || 
+                lowerMessage.includes("killed") || lowerMessage.includes("shot")
+            ) { 
+                sendDiscordAlert("died"); 
             }
         }
     });
 
-    // 3. Bot Gets Kicked (Corrected hook syntax)
-    bot.on("kicked", (reason) => {
-        sendDiscordAlert(`kicked (Reason: ${reason})`);
+    // Converts Minecraft structured server packets cleanly into plain text to fix [object Object] output
+    bot.on("kicked", (reason) => { 
+        const cleanReason = reason && reason.toString ? reason.toString() : JSON.stringify(reason);
+        sendDiscordAlert(`kicked (Reason: ${cleanReason})`); 
     });
+    
+    bot.on("move", () => { resetInactivityTimer(); });
 
-    // 4. Reset Timer on Move
-    bot.on("move", () => {
-        resetInactivityTimer();
-    });
-
-    // 5. Connection Disconnects and Drops
     bot.on("end", (reason) => {
         botState.connected = false;
         clearInterval(walkInterval);
         clearTimeout(inactivityTimer);
         sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
-        addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
         setTimeout(startBot, 15000);
     });
 
@@ -241,10 +181,20 @@ function setupBotEvents(accountPassword) {
         botState.connected = false;
         clearInterval(walkInterval);
         clearTimeout(inactivityTimer);
-        sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
-        addLog(`[Network Alert] Connection dropped: ${err.message}`);
+        sendDiscordAlert(`crushed/errored (${err.message})`);
     });
-} // This curly brace now properly closes setupBotEvents() after ALL handlers are declared!
+}
 
-// Start execution
+// Discord Channel Text Command Monitoring Loop
+discordClient.on("messageCreate", async (message) => {
+    if (message.author.bot) return; // Prevent bot from triggering its own loops
+    if (message.content.toLowerCase() === "!restart") {
+        message.reply("🔄 **Received command.** Initiating clean reboot sequence for Zooba...");
+        botState.connected = false;
+        startBot();
+    }
+});
+
+// Start Connections
+discordClient.login("MTUzNzM2MTEwNzMwMjIyODAxOA.GxyE_H.4f-L_MIQxQxOJxqh5QeaUQc1gSSyJ8x0Z_TLFw").catch(err => console.error("Discord Login Fail:", err.message));
 startBot();
