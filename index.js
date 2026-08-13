@@ -11,7 +11,7 @@ const proxyUrl = "socks5://83.14.246.42:1080";
 let logEntries = [];
 
 // ⚠️ PASTE YOUR SECRETS DISCORD BOT TOKEN HERE INSIDE THE QUOTES
-const DISCORD_BOT_TOKEN = "PASTE_YOUR_NEW_SECRET_BOT_TOKEN_HERE"; 
+const DISCORD_BOT_TOKEN = "P"; 
 
 function addLog(msg) {
   const time = new Date().toLocaleTimeString();
