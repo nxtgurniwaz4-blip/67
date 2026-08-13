@@ -195,6 +195,7 @@ discordClient.on("messageCreate", async (message) => {
     }
 });
 
-// Start Connections
-discordClient.login("MTUzNzM2MTEwNzMwMjIyODAxOA.GxyE_H.4f-L_MIQxQxOJxqh5QeaUQc1gSSyJ8x0Z_TLFw").catch(err => console.error("Discord Login Fail:", err.message));
+
 startBot();
+discordClient.login(process.env.DISCORD_TOKEN).catch(err => console.error("Discord Login Fail:", err.message));
+
