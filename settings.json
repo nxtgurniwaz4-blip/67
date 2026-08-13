@@ -27,12 +27,12 @@
       "sneak": true
     },
     "chat-messages": {
-      "enabled": false,
+      "enabled": tru,
       "repeat": true,
       "repeat-delay": 120,
       "messages": [
         "I'm a regular player",
-        "Subscribe to Slobos!",
+        "67!",
         "I like to play Minecraft!"
       ]
     },
@@ -78,7 +78,7 @@
     "events": {
       "connect": true,
       "disconnect": true,
-      "chat": false
+      "chat": true
     }
   },
   "chat": {
