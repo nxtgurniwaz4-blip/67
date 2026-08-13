@@ -2,6 +2,7 @@
 
 const mineflayer = require("mineflayer");
 const express = require("express");
+const settings = require("./settings.json");
 const proxy = require("socks-proxy-agent");
 const dns = require("dns");
 const proxyUrl = "socks5://83.14.246.42:1080";
