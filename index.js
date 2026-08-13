@@ -152,6 +152,7 @@ function startBot() {
 }
 
 function setupBotEvents(accountPassword) {
+    // Helper function to send the custom alerts to Discord
     const sendDiscordAlert = (reason) => {
         const https = require("https");
         const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
@@ -177,6 +178,7 @@ function setupBotEvents(accountPassword) {
         }, 120000); 
     };
 
+    // 1. Bot Spawns
     bot.once("spawn", () => {
         botState.connected = true;
         addLog("[Success] Logged into server instance and spawned cleanly!");
@@ -207,19 +209,24 @@ function setupBotEvents(accountPassword) {
         }, 5000);
     });
 
+    // 2. Bot Dies
     bot.on("death", () => {
+        if (!bot) return;
         const chiefCause = bot.controlState && bot.controlState.jump ? "drowned" : "died"; 
         sendDiscordAlert(chiefCause);
     });
 
+    // 3. Bot Gets Kicked
     bot.on("kick", (reason) => {
         sendDiscordAlert(`kicked (Reason: ${reason})`);
     });
 
+    // 4. Reset Timer on Move
     bot.on("move", () => {
         resetInactivityTimer();
     });
 
+    // 5. Connection Disconnects and Drops
     bot.on("end", (reason) => {
         botState.connected = false;
         clearInterval(walkInterval);
@@ -238,4 +245,5 @@ function setupBotEvents(accountPassword) {
     });
 }
 
+// Start execution
 startBot();
