@@ -144,7 +144,7 @@ function startBot() {
       port: finalPort,
       username: botUsername,
       auth: "offline",
-      version: false
+      version: 1.21.1
     });
     
     setupBotEvents(accountPassword); 
