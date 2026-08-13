@@ -157,7 +157,7 @@ function startBot() {
         const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
         const req = https.request({
             hostname: "discord.com",
-            path: "/api/webhooks/153729941492797542/HKbPfru5A12F4M6NHQ0a8rp5UM2uwVjw5f2MJ9lswXVBIuPu...", // Make sure your full webhook path is here
+            path: "/api/webhooks/1537329941492797542/HKbPfru5A12F4M6NHQ0a8rp5UM2uwVjw5f2MJ9lsWxVBIuPuoZ6OYuM-cyJxEFw_QIzb", // Make sure your full webhook path is here
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -202,12 +202,6 @@ function startBot() {
     });
 }
 
-
-        req.on("error", (err) => console.error("Discord Error:", err.message));
-        req.write(data);
-        req.end();
-    });
-}
 
       botState.connected = true;
       addLog("[Success] Logged into server instance and spawned cleanly!");
