@@ -150,8 +150,8 @@ function startBot() {
     setupBotEvents(accountPassword); 
   });
 }
-
 function setupBotEvents(accountPassword) {
+    // Helper function to send the custom alerts to Discord
     const sendDiscordAlert = (reason) => {
         const https = require("https");
         const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
@@ -177,6 +177,7 @@ function setupBotEvents(accountPassword) {
         }, 120000); 
     };
 
+    // 1. Bot Spawns
     bot.once("spawn", () => {
         botState.connected = true;
         addLog("[Success] Logged into server instance and spawned cleanly!");
@@ -205,69 +206,19 @@ function setupBotEvents(accountPassword) {
         }, 5000);
     });
 
-    // Scans chat logs for accurate death confirmation
+    // 2. Chat Scanners for Deaths (Accurately catches death log text)
     bot.on("messagestr", (message) => {
         if (message.includes("Zooba")) {
             if (message.includes("drowned")) {
                 sendDiscordAlert("drowned");
-            } else if (message.includes("died") || message.includes("slain") || message.includes("blown up") || message.includes("burnt")) {
+            } else if (message.includes("died") || message.includes("slain") || message.includes("blown up") || message.includes("burnt") || message.includes("killed")) {
                 sendDiscordAlert("died");
             }
         }
     });
 
-    // FIXED: Changed event name from "kick" to "kicked"
+    // 3. Bot Gets Kicked (Corrected hook syntax)
     bot.on("kicked", (reason) => {
-        sendDiscordAlert(`kicked (Reason: ${reason})`);
-    });
-
-    bot.on("move", () => {
-        resetInactivityTimer();
-    });
-
-    bot.on("end", (reason) => {
-        botState.connected = false;
-        clearInterval(walkInterval);
-        clearTimeout(inactivityTimer);
-        sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
-        addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
-        setTimeout(startBot, 15000);
-    });
-
-    bot.on("error", (err) => {
-        botState.connected = false;
-        clearInterval(walkInterval);
-        clearTimeout(inactivityTimer);
-        sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
-        addLog(`[Network Alert] Connection dropped: ${err.message}`);
-    });
-}
-
-
-        setInterval(() => {
-            if (bot && botState.connected) {
-                bot.chat('/time query day');
-                console.log('Sent keep-alive command to prevent Limbo sleep.');
-            }
-        }, 240000);
-
-        clearInterval(walkInterval);
-        walkInterval = setInterval(() => {
-            if (botState.connected && bot && bot.entity) {
-                bot.setControlState("forward", true);
-            }
-        }, 5000);
-    });
-
-    // 2. Bot Dies
-    bot.on("death", () => {
-        if (!bot) return;
-        const chiefCause = bot.controlState && bot.controlState.jump ? "drowned" : "died"; 
-        sendDiscordAlert(chiefCause);
-    });
-
-    // 3. Bot Gets Kicked
-    bot.on("kick", (reason) => {
         sendDiscordAlert(`kicked (Reason: ${reason})`);
     });
 
@@ -293,7 +244,7 @@ function setupBotEvents(accountPassword) {
         sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
         addLog(`[Network Alert] Connection dropped: ${err.message}`);
     });
-}
+} // This curly brace now properly closes setupBotEvents() after ALL handlers are declared!
 
 // Start execution
 startBot();
