@@ -150,24 +150,65 @@ function startBot() {
     setupBotEvents(); 
   });
   
-  function setupBotEvents() {
-    bot.once("spawn", () => {
-      const https = require("https");
-      const data = JSON.stringify({ content: "✅ **Bot Online:** Zooba joined the server!" });
-      const req = https.request({
-        hostname: "discord.com",
-        path: "/api/webhooks/1537329941492797542/HKbPfru5A12F4M6NHQ0a8rp5UM2uwVjw5f2MJ9lsWxVBIuPuoZ6OYuM-cyJxEFw_QIzb",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Content-Length": Buffer.byteLength(data)
-        }
-      });
-      req.on("error", (err) => console.error("Discord Error:", err.message));
-      req.write(data);
-      req.end();
+ function setupBotEvents() {
+    // Helper function to send the custom alerts to Discord
+    const sendDiscordAlert = (reason) => {
+        const https = require("https");
+        const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
+        const req = https.request({
+            hostname: "discord.com",
+            path: "/api/webhooks/153729941492797542/HKbPfru5A12F4M6NHQ0a8rp5UM2uwVjw5f2MJ9lswXVBIuPu...", // Make sure your full webhook path is here
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Content-Length": Buffer.byteLength(data)
+            }
+        });
+        req.on("error", (err) => console.error("Discord Error:", err.message));
+        req.write(data);
+        req.end();
+    };
 
-}})
+    // 1. Bot Spawns (Original Code)
+    bot.once("spawn", () => {
+        sendDiscordAlert("online: Zooba joined the server!");
+        resetInactivityTimer();
+    });
+
+    // 2. Bot Dies (Handles standard deaths and specific causes like drowning)
+    bot.on("death", () => {
+        // Checks the recent game log or health state to detect drowning
+        const chiefCause = bot.controlState && bot.controlState.jump ? "drowned" : "died"; 
+        sendDiscordAlert(chiefCause);
+    });
+
+    // 3. Bot Gets Kicked
+    bot.on("kick", (reason) => {
+        sendDiscordAlert("kicked");
+    });
+
+    // 4. Inactivity Tracker (Detects staying still for 2+ minutes)
+    let inactivityTimer;
+    const resetInactivityTimer = () => {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+            sendDiscordAlert("stayed still");
+        }, 120000); // 120,000 milliseconds = 2 minutes
+    };
+
+    // Reset the timer whenever the bot successfully changes its position
+    bot.on("move", () => {
+        resetInactivityTimer();
+    });
+}
+
+
+        req.on("error", (err) => console.error("Discord Error:", err.message));
+        req.write(data);
+        req.end();
+    });
+}
+
       botState.connected = true;
       addLog("[Success] Logged into server instance and spawned cleanly!");
       
