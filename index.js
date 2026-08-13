@@ -167,7 +167,7 @@ function startBot() {
       req.write(data);
       req.end();
 
-}
+}}
       botState.connected = true;
       addLog("[Success] Logged into server instance and spawned cleanly!");
       
