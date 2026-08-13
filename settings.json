@@ -27,7 +27,7 @@
       "sneak": true
     },
     "chat-messages": {
-      "enabled": tru,
+      "enabled": true,
       "repeat": true,
       "repeat-delay": 120,
       "messages": [
