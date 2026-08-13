@@ -152,7 +152,6 @@ function startBot() {
 }
 
 function setupBotEvents(accountPassword) {
-    // Helper function to send the custom alerts to Discord
     const sendDiscordAlert = (reason) => {
         const https = require("https");
         const data = JSON.stringify({ content: `⚠️CRITICAL ALERT: ZOOBA HAS ${reason.toUpperCase()}` });
@@ -178,7 +177,6 @@ function setupBotEvents(accountPassword) {
         }, 120000); 
     };
 
-    // 1. Bot Spawns
     bot.once("spawn", () => {
         botState.connected = true;
         addLog("[Success] Logged into server instance and spawned cleanly!");
@@ -190,9 +188,61 @@ function setupBotEvents(accountPassword) {
                 bot.chat(`/login ${accountPassword}`);
                 bot.chat("/skin Hacker");
                 addLog("[Auth] Sent account password key packet.");
-                console.log(`${bot.username} has spawned in the bedrock box.`);
             }
         }, 2000);
+
+        setInterval(() => {
+            if (bot && botState.connected) {
+                bot.chat('/time query day');
+            }
+        }, 240000);
+
+        clearInterval(walkInterval);
+        walkInterval = setInterval(() => {
+            if (botState.connected && bot && bot.entity) {
+                bot.setControlState("forward", true);
+            }
+        }, 5000);
+    });
+
+    // Scans chat logs for accurate death confirmation
+    bot.on("messagestr", (message) => {
+        if (message.includes("Zooba")) {
+            if (message.includes("drowned")) {
+                sendDiscordAlert("drowned");
+            } else if (message.includes("died") || message.includes("slain") || message.includes("blown up") || message.includes("burnt")) {
+                sendDiscordAlert("died");
+            }
+        }
+    });
+
+    // FIXED: Changed event name from "kick" to "kicked"
+    bot.on("kicked", (reason) => {
+        sendDiscordAlert(`kicked (Reason: ${reason})`);
+    });
+
+    bot.on("move", () => {
+        resetInactivityTimer();
+    });
+
+    bot.on("end", (reason) => {
+        botState.connected = false;
+        clearInterval(walkInterval);
+        clearTimeout(inactivityTimer);
+        sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
+        addLog(`[Disconnect] Server became unreachable (${reason}). Retrying in 15 seconds...`);
+        setTimeout(startBot, 15000);
+    });
+
+    bot.on("error", (err) => {
+        botState.connected = false;
+        clearInterval(walkInterval);
+        clearTimeout(inactivityTimer);
+        sendDiscordAlert(`crushed/errored (Connection dropped: ${err.message})`);
+        addLog(`[Network Alert] Connection dropped: ${err.message}`);
+    });
+}
+
 
         setInterval(() => {
             if (bot && botState.connected) {
