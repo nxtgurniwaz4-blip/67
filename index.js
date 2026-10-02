@@ -94,7 +94,7 @@ function startBot() {
       port: finalPort,
       username: botUsername,
       auth: "offline",
-      version: "1.21.1" // Kept exactly to match your current dashboard configurations!
+      version: "1.21.11" // Kept exactly to match your current dashboard configurations!
     });
     
     setupBotEvents(accountPassword); 
