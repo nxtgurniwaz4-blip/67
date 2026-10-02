@@ -73,7 +73,7 @@ function startBot() {
     bot = null;
   }
 
-  const serverIp = "Cocomelon-76hE.aternos.me";
+  const serverIp = "s8ul-g2eo.aternos.me";
   const botUsername = "Zooba";
   const accountPassword = "chalol78";
 
