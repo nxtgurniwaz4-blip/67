@@ -3,11 +3,8 @@
 const mineflayer = require("mineflayer");
 const express = require("express");
 const settings = require("./settings.json");
-const proxy = require("socks-proxy-agent");
-const dns = require("dns");
 const { Client, GatewayIntentBits } = require("discord.js");
 
-const proxyUrl = "socks5://83.14.246.42:1080";
 let logEntries = [];
 
 // ⚠️ PASTE YOUR SECRETS DISCORD BOT TOKEN HERE INSIDE THE QUOTES
@@ -73,32 +70,25 @@ function startBot() {
     bot = null;
   }
 
-  const serverIp = "s8ul-g2eo.aternos.me";
-  const botUsername = "Zooba";
-  const accountPassword = "chalol78";
+  // Pulls cleaned parameters straight out of your updated settings.json config file
+  const serverIp = settings.server.ip.trim();
+  const serverPort = settings.server.port;
+  const botUsername = settings.bot-account.username;
+  const accountPassword = settings.utils["auto-auth"].password;
+  const targetVersion = settings.server.version;
 
-  addLog(`[Network] Pinging ${serverIp}...`);
-  
-  dns.resolveSrv(`_minecraft._tcp.${serverIp}`, (err, records) => {
-    let finalHost = serverIp;
-    let finalPort = 25565;
+  addLog(`[Network] Connecting directly to ${serverIp}:${serverPort}...`);
 
-    if (!err && records && records.length > 0) {
-      finalHost = records[0].name;
-      finalPort = records[0].port;
-    }
-
-    bot = mineflayer.createBot({
-      agent: new proxy.SocksProxyAgent(proxyUrl),
-      host: finalHost,
-      port: finalPort,
-      username: botUsername,
-      auth: "offline",
-      version: "1.21.11" // Kept exactly to match your current dashboard configurations!
-    });
-    
-    setupBotEvents(accountPassword); 
+  // Bypassed the broken proxy routing and DNS SRV checks completely
+  bot = mineflayer.createBot({
+    host: serverIp,
+    port: serverPort,
+    username: botUsername,
+    auth: "offline",
+    version: targetVersion
   });
+  
+  setupBotEvents(accountPassword);
 }
 
 function setupBotEvents(accountPassword) {
@@ -161,9 +151,9 @@ function setupBotEvents(accountPassword) {
         }
     });
 
-    // Converts Minecraft structured server packets cleanly into plain text to fix [object Object] output
     bot.on("kicked", (reason) => { 
         const cleanReason = reason && reason.toString ? reason.toString() : JSON.stringify(reason);
+        addLog(`[Kicked] Reason: ${cleanReason}`);
         sendDiscordAlert(`kicked (Reason: ${cleanReason})`); 
     });
     
@@ -173,6 +163,7 @@ function setupBotEvents(accountPassword) {
         botState.connected = false;
         clearInterval(walkInterval);
         clearTimeout(inactivityTimer);
+        addLog(`[Disconnected] Connection ended: ${reason}`);
         sendDiscordAlert(`disconnected (Server unreachable: ${reason})`);
         setTimeout(startBot, 15000);
     });
@@ -181,13 +172,13 @@ function setupBotEvents(accountPassword) {
         botState.connected = false;
         clearInterval(walkInterval);
         clearTimeout(inactivityTimer);
+        addLog(`[Error] Network error caught: ${err.message}`);
         sendDiscordAlert(`crushed/errored (${err.message})`);
     });
 }
 
-// Discord Channel Text Command Monitoring Loop
 discordClient.on("messageCreate", async (message) => {
-    if (message.author.bot) return; // Prevent bot from triggering its own loops
+    if (message.author.bot) return;
     if (message.content.toLowerCase() === "!restart") {
         message.reply("🔄 **Received command.** Initiating clean reboot sequence for Zooba...");
         botState.connected = false;
@@ -195,7 +186,5 @@ discordClient.on("messageCreate", async (message) => {
     }
 });
 
-
 startBot();
-discordClient.login(process.env.DISCORD_TOKEN).catch(err => console.error("Discord Login Fail:", err.message));
-
+discordClient.login(process.env.DISCORD_TOKEN || DISCORD_BOT_TOKEN).catch(err => console.error("Discord Login Fail:", err.message));
