@@ -70,16 +70,15 @@ function startBot() {
     bot = null;
   }
 
-  // Pulls cleaned parameters straight out of your updated settings.json config file
+  // Bracket notation fixes the ReferenceError crash caused by hyphens
   const serverIp = settings.server.ip.trim();
   const serverPort = settings.server.port;
-  const botUsername = settings.bot-account.username;
+  const botUsername = settings["bot-account"].username;
   const accountPassword = settings.utils["auto-auth"].password;
   const targetVersion = settings.server.version;
 
   addLog(`[Network] Connecting directly to ${serverIp}:${serverPort}...`);
 
-  // Bypassed the broken proxy routing and DNS SRV checks completely
   bot = mineflayer.createBot({
     host: serverIp,
     port: serverPort,
