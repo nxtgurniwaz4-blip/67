@@ -6,7 +6,7 @@
     "type": "offline"
   },
   "server": {
-    "ip": " s8ul-g2eo.aternos.me",
+    "ip": "s8ul-g2eo.aternos.me",
     "port": 56418,
     "version": "1.21.11",
     "try-creative": false
