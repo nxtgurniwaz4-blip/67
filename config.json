@@ -6,8 +6,8 @@
     "type": "offline"
   },
   "server": {
-    "ip": "s8ul-g2eo.aternos.me",
-    "port": 34541,
+    "ip": "S8ul.enderman.cloud",
+    "port": 25565,
     "version": "",
     "try-creative": false
   },
